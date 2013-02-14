@@ -5,12 +5,14 @@ import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
 import edu.wpi.first.smartdashboard.properties.IPAddressProperty;
 import edu.wpi.first.smartdashboard.properties.Property;
+import edu.wpi.first.smartdashboard.properties.IntegerProperty;
 import edu.wpi.first.wpijavacv.WPICamera;
 import edu.wpi.first.wpijavacv.WPIColor;
 import edu.wpi.first.wpijavacv.WPIColorImage;
 import edu.wpi.first.wpijavacv.WPIGrayscaleImage;
 import edu.wpi.first.wpijavacv.WPIImage;
 import edu.wpi.first.wpijavacv.WPIPoint;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -32,7 +34,13 @@ public class SwitchableCameraExtension extends StaticWidget{
 	
 	DashboardPrefs prefs = (DashboardPrefs) DashboardPrefs.getInstance();
 	
+	
 	public final IPAddressProperty ipProperty = new IPAddressProperty(this, "Camera IP Address", new int[]{10, (prefs.team.getValue() / 100), (prefs.team.getValue() % 100), 11});
+	public final IntegerProperty heightProperty = new IntegerProperty(this, "Target height", 12);
+	public final IntegerProperty widthProperty = new IntegerProperty(this, "Target width", 54);
+	public final IntegerProperty dist1 = new IntegerProperty(this, "Target1 dist", 70);
+	public final IntegerProperty dist2 = new IntegerProperty(this, "Target2 dist", 120);
+	public final IntegerProperty dist3 = new IntegerProperty(this, "Target3 dist", 170);
 	
 	public class GCThread extends Thread {
 		boolean destroyed = false;
@@ -71,13 +79,19 @@ public class SwitchableCameraExtension extends StaticWidget{
 		};
 		
 		public BGThread(){
-			super("Camera Backgournd");
+			super("Camera Background");
 		}
 		
 		@Override
 		public void run(){
 			WPIImage image;
 			while(!destroyed){
+				
+				if(NetworkTable.getTable("SmartDash").getBoolean("Change")){
+					firstCamera = !firstCamera;
+					NetworkTable.getTable("SmartDash").putBoolean("Change", false);
+				}
+				
 				if(cam == null){
 					cam = new WPICamera("10.36.76.11");
 					System.out.println("CAMERA 1 now set");
@@ -179,6 +193,12 @@ public class SwitchableCameraExtension extends StaticWidget{
                 
                 frame.repaint();
 			}
+		} else {
+			TOP_GOAL_WIDTH = widthProperty.getValue();
+			TOP_GOAL_HEIGHT = heightProperty.getValue();
+			intDist1 = dist1.getValue();
+			intDist2 = dist2.getValue();
+			intDist3 = dist3.getValue();
 		}
 	}
 	
@@ -195,20 +215,23 @@ public class SwitchableCameraExtension extends StaticWidget{
 		super.disconnect();
 	}
 	
-        private static final int TOP_GOAL_WIDTH = 54;
-        private static final int TOP_GOAL_HEIGHT = 12;
+       
+    private int TOP_GOAL_WIDTH = 54;
+    private int TOP_GOAL_HEIGHT = 12;
+	private int intDist1 = 70;
+	private int intDist2 = 120;
+	private int intDist3 = 170;
 	public WPIImage processImage(WPIColorImage rawImage){
-            if(firstCamera)
+		if(firstCamera)
+			return rawImage;
+        WPIPoint topPoint = new WPIPoint(rawImage.getWidth() / 2 ,0);
+        WPIPoint bottomPoint = new WPIPoint(rawImage.getWidth() / 2, rawImage.getHeight());
+        rawImage.drawLine(topPoint, bottomPoint, WPIColor.BLACK, 2);
+		rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), intDist1, TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.YELLOW, 2);
+		rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), intDist2, TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.BLUE, 2);
+		rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), intDist3, TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.RED, 2);
+            
 		return rawImage;
-            WPIPoint topPoint = new WPIPoint(rawImage.getWidth() / 2 ,0);
-            WPIPoint bottomPoint = new WPIPoint(rawImage.getWidth() / 2, rawImage.getHeight());
-            rawImage.drawLine(topPoint, bottomPoint, WPIColor.BLACK, 2);
-            
-            rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), rawImage.getHeight() / 2 - (TOP_GOAL_HEIGHT / 2) - 50, TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.YELLOW, 2);
-            rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), rawImage.getHeight() / 2 - (TOP_GOAL_HEIGHT / 2), TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.BLUE, 2);
-            rawImage.drawRect(rawImage.getWidth() / 2 - (TOP_GOAL_WIDTH / 2), rawImage.getHeight() / 2 - (TOP_GOAL_HEIGHT / 2) + 50, TOP_GOAL_WIDTH, TOP_GOAL_HEIGHT, WPIColor.RED, 2);
-            
-            return rawImage;
 	}
 	public WPIImage processImage(WPIGrayscaleImage rawImage) {
         return rawImage;

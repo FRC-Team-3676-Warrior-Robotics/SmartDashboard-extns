@@ -87,10 +87,10 @@ public class SwitchableCameraExtension extends StaticWidget{
 			WPIImage image;
 			while(!destroyed){
 				
-				if(NetworkTable.getTable("SmartDash").getBoolean("Change")){
-					firstCamera = !firstCamera;
-					NetworkTable.getTable("SmartDash").putBoolean("Change", false);
-				}
+//				if(NetworkTable.getTable("SmartDash").getBoolean("Change")){
+//					firstCamera = !firstCamera;
+//					NetworkTable.getTable("SmartDash").putBoolean("Change", false);
+//				}
 				
 				if(cam == null){
 					cam = new WPICamera("10.36.76.11");

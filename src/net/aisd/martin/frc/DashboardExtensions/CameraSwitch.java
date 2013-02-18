@@ -18,36 +18,35 @@ import javax.swing.JButton;
  *
  * @author Neil
  */
-public class CameraSwitch extends StaticWidget{
+public class CameraSwitch extends StaticWidget {
+
 	public static final String name = "Camera Switch";
 	JButton button;
 	StringProperty label = new StringProperty(this, "Label", "Camera");
-	
+
 	@Override
-	public void init(){
-		this.button = new JButton((String)this.label.getValue());
-		
+	public void init() {
+		this.button = new JButton((String) this.label.getValue());
+
 		setLayout(new GridLayout());
 		add(this.button, 0);
 		this.button.setFocusable(false);
-		this.button.addActionListener(new ActionListener(){
+		this.button.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent ae){
+			public void actionPerformed(ActionEvent ae) {
 				Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 				SwitchableCameraExtension.SwitchCamera();
 				System.out.println("________________");
 				System.out.println("SWITCHING CAMERA");
-				System.out.println("________________");		
+				System.out.println("________________");
 			}
 		});
 	}
 
 	@Override
-	public void propertyChanged(Property property){
-		if(property == this.label){
-			this.button.setText((String)this.label.getValue());
+	public void propertyChanged(Property property) {
+		if (property == this.label) {
+			this.button.setText((String) this.label.getValue());
 		}
 	}
-	
-
 }
